@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Glitch Café — Welcome</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0710; --neon:#ff33cc; --neon2:#00ffcc; --muted:#9b9ba3; --glass: rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family: 'Share Tech Mono', monospace;background: var(--bg); color:#eee;overflow-x:hidden;}
+
+    /* Cyberpunk cityscape background */
+    .bg-container {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+    
+    .cityscape {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 60%;
+      background: 
+        linear-gradient(to top, #0b0710, transparent),
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400"><rect width="50" height="300" x="50" fill="%23002211"/><rect width="80" height="250" x="200" fill="%23001122"/><rect width="40" height="350" x="350" fill="%23110033"/><rect width="100" height="280" x="500" fill="%23003311"/><rect width="60" height="320" x="700" fill="%23110022"/><rect width="120" height="240" x="900" fill="%23002233"/><rect width="70" height="380" x="1100" fill="%23330011"/></svg>');
+      background-size: 1200px 400px;
+      background-repeat: repeat-x;
+      background-position: bottom;
+      animation: cityScroll 60s linear infinite;
+      opacity: 0.5;
+    }
+    
+    .neon-grid {
+      position: absolute;
+      inset: 0;
+      background: 
+        linear-gradient(rgba(255, 51, 204, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 204, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridPulse 15s infinite alternate;
+    }
+    
+    .neon-signs {
+      position: absolute;
+      inset: 0;
+      opacity: 0.7;
+    }
+    
+    .neon-sign {
+      position: absolute;
+      font-family: 'VT323';
+      color: var(--neon);
+      text-shadow: 0 0 10px var(--neon);
+      animation: neonFlicker 3s infinite alternate;
+    }
+    
+    .neon-sign:nth-child(2n) {
+      color: var(--neon2);
+      text-shadow: 0 0 10px var(--neon2);
+    }
+    
+    .neon-line {
+      position: absolute;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+      opacity: 0.3;
+      animation: lineScan 8s linear infinite;
+    }
+    
+    .glitch-overlay {
+      position: absolute;
+      inset: 0;
+      background: 
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="%23ff33cc" stroke-width="0.5" stroke-dasharray="2 2"/></svg>'),
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="none" stroke="%2300ffcc" stroke-width="0.3" stroke-dasharray="5 3"/></svg>');
+      background-size: 100px 100px, 200px 200px;
+      opacity: 0.1;
+      mix-blend-mode: overlay;
+    }
+    
+    @keyframes cityScroll {
+      0% { background-position: 0 bottom; }
+      100% { background-position: -1200px bottom; }
+    }
+    
+    @keyframes gridPulse {
+      0% { opacity: 0.3; }
+      50% { opacity: 0.7; }
+      100% { opacity: 0.3; }
+    }
+    
+    @keyframes neonFlicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 0.8; }
+      20%, 22%, 24%, 55% { opacity: 0.2; }
+    }
+    
+    @keyframes lineScan {
+      0% { top: 0%; opacity: 0; }
+      2% { opacity: 0.5; }
+      98% { opacity: 0.5; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    /* noise background */
+    .noise{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      mix-blend-mode:screen;
+      opacity:0.04;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><filter id="n"><feTurbulence baseFrequency="0.9" numOctaves="2"/></filter><rect width="100%" height="100%" filter="url(%23n)" fill="white"/></svg>');
+    }
+
+    /* Preloader */
+    #preloader{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.85));
+      z-index:1000;
+    }
+    .pre-box{
+      font-family: 'VT323', monospace;
+      color:var(--neon);
+      font-size:28px;
+      letter-spacing:2px;
+      text-shadow:0 0 10px rgba(255,51,204,0.25);
+    }
+    .glitch{
+      position:relative;
+    }
+    .glitch::before,.glitch::after{
+      content:attr(data-text);
+      position:absolute;
+      left:0;
+      top:0;
+    }
+    .glitch::before{
+      color:var(--neon);
+      transform:translateX(2px) skewX(-8deg);
+      clip-path:polygon(0 0,100% 0,100% 60%,0 60%);
+      opacity:0.9;
+    }
+    .glitch::after{
+      color:var(--neon2);
+      transform:translateX(-2px) skewX(8deg);
+      clip-path:polygon(0 40%,100% 40%,100% 100%,0 100%);
+      opacity:0.85;
+    }
+
+    /* Layout */
+    .container{
+      max-width:1100px;
+      margin:40px auto;
+      padding:28px;
+      display:grid;
+      grid-template-columns:1fr 380px;
+      gap:24px;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      gap:18px;
+    }
+    .logo{
+      font-family:'VT323';
+      font-size:34px;
+      color:var(--neon);
+      cursor:pointer;
+      position:relative;
+      text-shadow:0 0 8px rgba(255,51,204,0.4);
+      transition:all 0.3s;
+    }
+    .logo:hover{
+      text-shadow:0 0 12px rgba(255,51,204,0.7);
+      transform:scale(1.02);
+    }
+    .subtitle{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* Menu card */
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:14px;
+      padding:18px;
+      box-shadow:0 6px 30px rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      border:1px solid rgba(255,255,255,0.03);
+      transition:all 0.3s;
+      position:relative;
+      overflow:hidden;
+    }
+    .card::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:linear-gradient(120deg, rgba(255,51,204,0.03), rgba(0,255,204,0.03));
+      pointer-events:none;
+      z-index:-1;
+      border-radius:inherit;
+    }
+    .card:hover{
+      box-shadow:0 6px 40px rgba(0,0,0,0.8);
+      transform:translateY(-2px);
+    }
+    .menu-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+    .menu-item{
+      padding:12px;
+      border-radius:8px;
+      background:var(--glass);
+      position:relative;
+      overflow:hidden;
+      border:1px dashed rgba(255,255,255,0.03);
+      transition:all 0.3s;
+    }
+    .menu-item:hover{
+      border-color:var(--neon2);
+      background:linear-gradient(180deg, rgba(0,255,204,0.03), rgba(255,51,204,0.03));
+    }
+    .menu-item .name{
+      font-weight:700;
+      color:var(--neon);
+      font-size:15px;
+      text-shadow:0 0 4px rgba(255,51,204,0.3);
+    }
+    .menu-item .price{
+      font-family:'VT323';
+      font-size:16px;
+      color:var(--neon2);
+      text-shadow:0 0 4px rgba(0,255,204,0.3);
+    }
+    .menu-item .effect{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+
+    /* Glitch pulse */
+    @keyframes pulseGlitch{
+      0%{transform:translateX(0)}
+      20%{transform:translateX(-2px)}
+      40%{transform:translateX(2px)}
+      60%{transform:translateX(-1px)}
+      100%{transform:translateX(0)}
+    }
+
+    .glitch-flicker{animation: pulseGlitch 0.42s ease-in-out}
+
+    /* Reviews */
+    .reviews{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .review{
+      padding:10px;
+      border-radius:8px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.015));
+      font-size:13px;
+      color:#ddd;
+      position:relative;
+      cursor:default;
+      transition:all 0.3s;
+    }
+    .review:hover{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.025));
+      box-shadow:0 0 10px rgba(0,255,204,0.1);
+    }
+    .scramble{
+      font-family:'VT323';
+    }
+    .secret{
+      display:block;
+      font-size:11px;
+      color:var(--neon2);
+      margin-top:8px;
+      opacity:0;
+      transition:0.4s;
+      text-shadow:0 0 4px rgba(0,255,204,0.3);
+    }
+    .review:hover .secret{
+      opacity:1;
+    }
+
+    /* Terminal modal */
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:2000;
+      background:rgba(0,0,0,0.7);
+      backdrop-filter:blur(5px);
+    }
+    .terminal{
+      width:760px;
+      max-width:calc(100% - 40px);
+      background:#07060a;
+      border-radius:10px;
+      padding:18px;
+      border:1px solid rgba(0,255,204,0.06);
+      box-shadow:0 10px 60px rgba(0,0,0,0.7);
+      position:relative;
+    }
+    .terminal::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:linear-gradient(120deg, rgba(255,51,204,0.03), rgba(0,255,204,0.03));
+      pointer-events:none;
+      z-index:-1;
+      border-radius:inherit;
+    }
+    .term-line{
+      font-family:'VT323';
+      color:var(--neon2);
+      font-size:13px;
+      white-space:pre-wrap;
+      line-height:1.4;
+      text-shadow:0 0 4px rgba(0,255,204,0.3);
+    }
+    .term-close{
+      position:absolute;
+      right:26px;
+      top:18px;
+      color:var(--muted);
+      cursor:pointer;
+      transition:all 0.3s;
+    }
+    .term-close:hover{
+      color:var(--neon);
+      transform:scale(1.2);
+    }
+
+    /* Footer */
+    footer{
+      grid-column:1/-1;
+      margin-top:18px;
+      color:var(--muted);
+      font-size:12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    /* Custom cursor */
+    .cursor{
+      position:fixed;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      pointer-events:none;
+      transform:translate(-50%,-50%);
+      z-index:1500;
+      mix-blend-mode:overlay;
+      background:radial-gradient(circle at 40% 30%, rgba(255,255,255,0.2), transparent 30%), var(--neon);
+      transition:transform 0.1s, width 0.3s, height 0.3s, opacity 0.3s;
+    } 
+    .cursor.hover{
+      width:36px;
+      height:36px;
+      background:radial-gradient(circle at 40% 30%, rgba(255,255,255,0.3), transparent 40%), var(--neon2);
+    }
+
+    /* responsive */
+    @media (max-width:880px){
+      .container{grid-template-columns:1fr;}
+      .menu-grid{grid-template-columns:1fr;}
+      .cityscape{height:40%;}
+    }
+  </style>
+</head>
+<body>
+  <div id="preloader"><div class="pre-box"><span class="glitch" data-text="Connecting to Glitch Café...">Connecting to Glitch Café...</span></div></div>
+  
+  <!-- Enhanced cyberpunk background -->
+  <div class="bg-container">
+    <div class="cityscape"></div>
+    <div class="neon-grid"></div>
+    <div class="neon-signs" id="neonSigns"></div>
+    <div class="neon-line" id="scanLine"></div>
+    <div class="glitch-overlay"></div>
+    <div class="noise"></div>
+  </div>
+  
+  <div class="cursor" id="cursor"></div>
+
+  <main class="container">
+    <section>
+      <header>
+        <div class="logo" id="logo">Glitch Café</div>
+        <div>
+          <div style="font-size:14px;">Interweb's 13th Layer</div>
+          <div class="subtitle">Menu changes every second — side effects may apply</div>
+        </div>
+      </header>
+
+      <div style="height:18px"></div>
+
+      <div class="card">
+        <h3 style="margin:0 0 12px 0;color:var(--neon);text-shadow:0 0 6px rgba(255,51,204,0.3)">Today's (Unstable) Menu</h3>
+        <div class="menu-grid" id="menuGrid">
+          <!-- menu items injected here -->
+        </div>
+      </div>
+
+      <div style="height:18px"></div>
+
+      <div class="card">
+        <h4 style="margin:0 0 12px 0;color:var(--neon);text-shadow:0 0 4px rgba(255,51,204,0.3)">News Feed — Glitched</h4>
+        <div id="news" style="font-size:13px;color:var(--muted)">Data corruption at 03:14 — some reviews now speaking in tongues.</div>
+      </div>
+
+    </section>
+
+    <aside>
+      <div class="card">
+        <h4 style="margin:0 0 12px 0;color:var(--neon);text-shadow:0 0 4px rgba(255,51,204,0.3)">Customer Reviews</h4>
+        <div class="reviews" id="reviews">
+          <!-- reviews injected -->
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="card">
+        <h4 style="margin:0 0 12px 0;color:var(--neon);text-shadow:0 0 4px rgba(255,51,204,0.3)">Ambient</h4>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="toggleNoise" style="padding:8px 10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--neon);cursor:pointer;transition:all 0.3s">Toggle Noise</button>
+          <div style="color:var(--muted);font-size:13px">Synthesized background — no file needed</div>
+        </div>
+      </div>
+
+    </aside>
+
+    <footer>
+      <div>Built for <strong>Hackathon — Glitch Café</strong></div>
+      <div style="opacity:0.8">Easter eggs: click <span style="color:var(--neon)">Glitch Café</span> logo</div>
+    </footer>
+  </main>
+
+  <!-- Terminal modal -->
+  <div class="modal" id="modal">
+    <div class="terminal card" role="dialog" aria-modal="true">
+      <div class="term-close" id="termClose">✕</div>
+      <div class="term-line" id="termContent"></div>
+    </div>
+  </div>
+
+  <script>
+    /* ---------- Content arrays - customize these ---------- */
+    const MENU_ITEMS = [
+      {name:"Espresso of Eternal Mondays", price:2.99, effect:"May cause mild deja vu in your dreams."},
+      {name:"Croissant.exe", price:1.49, effect:"Layers rearrange memories of previous breakfasts."},
+      {name:"404 Not Found Burger", price:5.75, effect:"Portion exists, satisfaction pending."},
+      {name:"Binary Bagel 101010", price:3.30, effect:"All toppings alternate between sweet & savory."},
+      {name:"Time-Loop Tea", price:2.20, effect:"You might remember future conversations."},
+      {name:"Neon Latte (beta)", price:4.44, effect:"Temporary neon glow under UV light."},
+      {name:"Phantom Pie", price:6.60, effect:"Tastes different each bite."},
+      {name:"Barista_Bot Special", price:7.71, effect:"Guarantees one helpful life hint."},
+      {name:"Syntax Error Salad", price:5.25, effect:"Ingredients may appear/disappear randomly."},
+      {name:"RAM Ramen", price:6.66, effect:"Memory-boosting noodles (temporary)."},
+      {name:"Firewall Fries", price:3.99, effect:"Extra crispy with encryption seasoning."},
+      {name:"Debugging Donut", price:2.50, effect:"Fixes one minor life bug per bite."}
+    ];
+
+    const REVIEWS = [
+      {text:"I ordered the Croissant.exe and my childhood returned (with extra butter).", secret:"They left a note in the zipper of the couch."},
+      {text:"The Time-Loop Tea made me remember tomorrow's weather. 10/10.", secret:"KEY: 13-7-2"},
+      {text:"I swear the Neon Latte winked at me. Staff are very polite.", secret:"Staff name: Barista_Bot_7.2"},
+      {text:"Ordered the Phantom Pie. It tasted like a memory I forgot I had.", secret:"Find recipe fragment in /assets/crumbs"},
+      {text:"Menu changed while I was paying. Charged me in binary but it's fine.", secret:"Binary hint: 0100110"},
+      {text:"Debugging Donut fixed my sleep schedule! Now I dream in code.", secret:"Dream password: 0xCAFE13"},
+      {text:"Firewall Fries blocked all my negative thoughts. Worth every byte.", secret:"Encryption key: 0xGL1TCH"},
+      {text:"Syntax Error Salad compiled perfectly. No exceptions thrown.", secret:"Compiler flag: --delicious"}
+    ];
+
+    const NEON_SIGNS = [
+      "OPEN 24/7",
+      "CAUTION: GLITCH ZONE",
+      "NO REFUNDS",
+      "TRY OUR SPECIAL",
+      "WELCOME TO LAYER 13",
+      "REALITY MAY VARY",
+      "CONSUME AT OWN RISK",
+      "MEMORY LEAKS POSSIBLE"
+    ];
+
+    /* ---------- Cyberpunk Background Elements ---------- */
+    function createNeonSigns() {
+      const container = document.getElementById('neonSigns');
+      const scanLine = document.getElementById('scanLine');
+      
+      // Create neon signs
+      for (let i = 0; i < 8; i++) {
+        const sign = document.createElement('div');
+        sign.className = 'neon-sign';
+        sign.textContent = NEON_SIGNS[i];
+        sign.style.left = `${Math.random() * 80 + 10}%`;
+        sign.style.top = `${Math.random() * 70 + 10}%`;
+        sign.style.fontSize = `${Math.random() * 10 + 14}px`;
+        container.appendChild(sign);
+      }
+      
+      // Animate scan line
+      scanLine.style.left = `${Math.random() * 100}%`;
+      scanLine.style.width = `${Math.random() * 40 + 20}%`;
+    }
+
+    /* ---------- Utility / UI code ---------- */
+    const menuGrid = document.getElementById('menuGrid');
+    const reviewsEl = document.getElementById('reviews');
+
+    function makeMenuCard(item){
+      const d = document.createElement('div');
+      d.className='menu-item';
+      d.innerHTML = `<div class='name'>${escapeHTML(item.name)}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><div class='effect'>${escapeHTML(item.effect)}</div><div class='price'>${formatPrice(item.price)}</div></div>`;
+      return d;
+    }
+
+    function renderMenuSnapshot(){
+      // pick randoms and slight corruption to show instability
+      menuGrid.innerHTML='';
+      // shuffle and pick 6
+      const shuffled = [...MENU_ITEMS].sort(()=>Math.random()-0.5).slice(0,6).map(corruptItem);
+      for(const it of shuffled){
+        const card = makeMenuCard(it);
+        menuGrid.appendChild(card);
+        // animate micro-glitch
+        void card.offsetWidth; // force reflow
+        card.classList.add('glitch-flicker');
+        setTimeout(()=>card.classList.remove('glitch-flicker'),420);
+      }
+    }
+
+    function corruptItem(item){
+      // 30% chance to slightly glitch the name or price
+      const copy = {...item};
+      if(Math.random()<0.3){ copy.name = jitterText(copy.name); }
+      if(Math.random()<0.25){ copy.price = +(copy.price + (Math.random()-0.5)*2).toFixed(2); }
+      return copy;
+    }
+
+    function jitterText(s){
+      // insert small random unicode glyphs
+      const pos = Math.floor(Math.random()*Math.max(1,s.length));
+      const glitchChar = String.fromCharCode(0x2000 + Math.floor(Math.random()*100));
+      return s.slice(0,pos) + glitchChar + s.slice(pos+1);
+    }
+
+    function formatPrice(p){
+      // sometimes show binary or hex
+      if(Math.random()<0.12) return '₿ ' + (p*100).toString(2);
+      if(Math.random()<0.08) return '$' + p.toString(16).toUpperCase();
+      return '$' + p.toFixed(2);
+    }
+
+    function escapeHTML(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[c]); }
+
+    // Start rotating menu every 1s
+    renderMenuSnapshot();
+    const menuTimer = setInterval(renderMenuSnapshot, 1000);
+
+    /* ---------- Reviews rendering with scramble effect ---------- */
+    function renderReviews(){
+      reviewsEl.innerHTML='';
+      for(const r of REVIEWS){
+        const card = document.createElement('div'); card.className='review';
+        const p = document.createElement('div'); p.className='scramble'; p.textContent = r.text;
+        const secret = document.createElement('div'); secret.className='secret'; secret.textContent = 'Secret: ' + r.secret;
+        card.appendChild(p); card.appendChild(secret);
+        // add occasional text glitch
+        card.addEventListener('mouseenter', ()=>{ scramble(p, r.text); });
+        card.addEventListener('mouseleave', ()=>{ p.textContent = r.text; });
+        reviewsEl.appendChild(card);
+      }
+    }
+
+    function scramble(el, text){
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{};:\\"<>?,./\\|';
+      let i=0; const len=text.length; const id = setInterval(()=>{
+        const shown = text.split('').map((ch,idx)=> idx<i ? ch : chars[Math.floor(Math.random()*chars.length)]).join('');
+        el.textContent = shown;
+        i+=1;
+        if(i>len+4) clearInterval(id);
+      },30);
+    }
+
+    renderReviews();
+
+    /* ---------- Terminal easter egg ---------- */
+    const modal = document.getElementById('modal');
+    const termContent = document.getElementById('termContent');
+    const termClose = document.getElementById('termClose');
+    document.getElementById('logo').addEventListener('click', openTerminal);
+    termClose.addEventListener('click', ()=>{ modal.style.display='none'; });
+
+    function openTerminal(){
+      modal.style.display='flex';
+      termContent.textContent='';
+      const lines = [
+        '--- GLITCH CAFÉ TERMINAL ---',
+        'Layer: 13 | Uptime: ∞',
+        'Staff: Barista_Bot_7.2, Chef.exe',
+        '',
+        'NOTICE: MENU INSTABILITY IS INTENTIONAL.',
+        'HINT: Some reviews hide a key. Combine them to proceed.',
+        '',
+        'RECIPE FRAGMENT: [∑ spice × 0x4F] — find crumbs in the DOM.',
+        '',
+        'SYSTEM STATUS:',
+        '• Neural network: brewing at 87% capacity',
+        '• Reality distortion: stable (for now)',
+        '• Time loops detected: 13',
+        '',
+        'TRY THESE COMMANDS:',
+        '• help — show available commands',
+        '• menu — view stable menu (boring)',
+        '• secret — reveal hidden ingredients',
+        '',
+        'WARNING: Consumption may cause:',
+        '• Temporary reality shifts',
+        '• Spontaneous code comprehension',
+        '• Uncontrollable nostalgia for futures that never were'
+      ];
+      let i=0; const t = setInterval(()=>{
+        if(i>=lines.length){ clearInterval(t); return; }
+        termContent.textContent += lines[i] + '\n'; i++;
+      },80);
+    }
+
+    /* ---------- Background ambient noise using WebAudio ---------- */
+    let audioCtx=null; let noiseOn=false; let noiseNode=null; let osc=null; // keep refs
+    document.getElementById('toggleNoise').addEventListener('click', toggleNoise);
+
+    function toggleNoise(){
+      if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      if(noiseOn){ stopNoise(); } else { startNoise(); }
+    }
+
+    function startNoise(){
+      // white noise buffer
+      const bufferSize = 2 * audioCtx.sampleRate;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = (Math.random()*2-1) * 0.02; // subtle
+      noiseNode = audioCtx.createBufferSource();
+      noiseNode.buffer = buffer; noiseNode.loop = true;
+
+      // low-frequency slightly modulating oscillator
+      osc = audioCtx.createOscillator(); osc.type='sine'; osc.frequency.value = 0.18;
+      const gain = audioCtx.createGain(); gain.gain.value = 0.18;
+      osc.connect(gain);
+
+      const master = audioCtx.createGain(); master.gain.value = 0.6;
+      noiseNode.connect(master); gain.connect(master);
+      master.connect(audioCtx.destination);
+      noiseNode.start(); osc.start(); noiseOn=true;
+      document.getElementById('toggleNoise').textContent='Stop Noise';
+    }
+    function stopNoise(){ if(noiseNode) noiseNode.stop(); if(osc) osc.stop(); noiseOn=false; document.getElementById('toggleNoise').textContent='Toggle Noise'; }
+
+    /* ---------- Custom cursor movement ---------- */
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', (e)=>{ cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
+    document.addEventListener('mousedown', ()=>{ cursor.style.transform='translate(-50%,-50%) scale(0.7)'; });
+    document.addEventListener('mouseup', ()=>{ cursor.style.transform='translate(-50%,-50%) scale(1)'; });
+    
+    // Add hover effect for interactive elements
+    const hoverElements = document.querySelectorAll('button, .menu-item, .review, .logo');
+    hoverElements.forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
+
+    /* ---------- Small accessibility: keyboard to open terminal ---------- */
+    document.addEventListener('keydown', (e)=>{ if(e.key==='t') openTerminal(); if(e.key==='Escape') modal.style.display='none'; });
+
+    /* ---------- Preloader fadeout ---------- */
+    window.addEventListener('load', ()=>{
+      createNeonSigns();
+      setTimeout(()=>{
+        const pre = document.getElementById('preloader'); pre.style.transition='opacity 0.6s'; pre.style.opacity='0'; setTimeout(()=>pre.remove(),700);
+      },900);
+    });
+
+    /* ---------- Helpful dev: expose some functions globally for quick tweaks in console ---------- */
+    window.GlitchCafe = {renderMenuSnapshot, MENU_ITEMS, REVIEWS};
+  </script>
+</body>
+</html>
